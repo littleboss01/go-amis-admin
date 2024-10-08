@@ -1,0 +1,37 @@
+// 定义文件级别的Json标签复制
+// @Tag("gorm", "autoUpdateTime:nano")
+
+syntax = "proto3";
+
+package mail;
+
+import "http_config.proto";
+
+option go_package = "github.com/go-home-admin/go-admin/generate/proto/mail";
+
+service AccountList {
+  option (http.RouteGroup) = "admin";
+
+  // 管理用户的增删改查
+  option (http.Resource) = "lists";
+
+  // 登陆信息
+  rpc GetInfo(GetInfoRequest)returns(GetInfoResponse){
+    option (http.Get) = "/mail/list";
+  }
+}
+
+message GetInfoRequest {
+  string token = 1;
+}
+
+message GetInfoResponse {
+  // 名称
+  string name = 1;
+  // 头像
+  string avatar = 2;
+  // 角色
+  string roles = 3;
+  // 签名
+  string introduction = 4;
+}

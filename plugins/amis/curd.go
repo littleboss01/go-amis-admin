@@ -170,10 +170,25 @@ func (c *Crud) AddCreate(form *Form) {
 	f := form.SetApi(GetUrl(c.ctx, ""), "post")
 	button := NewButton("创建").SetDialogForm(f)
 	button.Level = "primary"
-	c.headerToolbar = []interface{}{
-		button,
-		"bulkActions",
+	//c.headerToolbar = []interface{}{
+	//	button,
+	//	"bulkActions",
+	//}
+	//保证创建按钮在首位
+	if len(c.headerToolbar) == 0 {
+		c.headerToolbar = append(c.headerToolbar, button)
+	} else {
+		c.headerToolbar = append([]interface{}{button, "bulkActions"}, c.headerToolbar)
 	}
+}
+
+// f := form.SetApi(GetUrl(c.ctx, ""), "post")
+// btnImport.SetDialogForm(f)
+func (c *Crud) AddCustomButton(btnName string) *Button {
+	button := NewButton(btnName)
+	button.Level = "primary"
+	c.headerToolbar = append(c.headerToolbar, button)
+	return button
 }
 
 type OperationConfig struct {

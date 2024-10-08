@@ -74,3 +74,27 @@ func (p *Page) AddBody(i interface{}) {
 	}
 	p.Body = append(p.Body.([]interface{}), i)
 }
+
+// curd是单独的,这里设置了也无效 //TODO 增加一个读取加密json的函数
+func (p *Page) AddBodyByJsonStr(s string) {
+	var v interface{}
+	err := json.Unmarshal([]byte(s), &v)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
+	switch v := v.(type) {
+	case map[string]interface{}:
+		// JSON 是对象
+		p.AddBody(v)
+	case []interface{}:
+		// JSON 是数组
+		for _, item := range v {
+			p.AddBody(item)
+		}
+	default:
+		// 其他类型，可以按需处理或忽略
+		println("Unexpected JSON type")
+	}
+}

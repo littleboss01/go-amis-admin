@@ -11,19 +11,34 @@ import (
 )
 
 type AdminMenu struct {
-	Id        uint32         `gorm:"column:id;autoIncrement;type:int unsigned;primaryKey;comment:'ID'" json:"id"`     // ID
-	ParentId  uint32         `gorm:"column:parent_id;type:int unsigned;default:0;comment:'父级'" json:"parent_id"`      // 父级
-	Name      string         `gorm:"column:name;type:varchar(50);comment:'组件名称'" json:"name"`                         // 组件名称
-	Component string         `gorm:"column:component;type:varchar(50);comment:'组件'" json:"component"`                 // 组件
-	Path      *string        `gorm:"column:path;type:varchar(255);default:;comment:'地址'" json:"path"`                 // 地址
-	Redirect  *string        `gorm:"column:redirect;type:varchar(255);default:;comment:'重定向'" json:"redirect"`        // 重定向
-	Meta      database.JSON  `gorm:"column:meta;type:json;comment:'元数据'" json:"meta"`                                 // 元数据
-	Hidden    uint32         `gorm:"column:hidden;type:tinyint unsigned;default:2;comment:'0忽略1隐藏2显示'" json:"hidden"` // 0忽略1隐藏2显示
-	Sort      uint32         `gorm:"column:sort;type:int unsigned;default:0;comment:'排序'" json:"sort"`                // 排序
-	ApiList   *database.JSON `gorm:"column:api_list;type:json;comment:'api'" json:"api_list"`                         // api
-	CreatedAt *database.Time `gorm:"column:created_at;type:timestamp;comment:'created_at'" json:"created_at"`         // created_at
-	UpdatedAt *database.Time `gorm:"column:updated_at;type:timestamp;comment:'updated_at'" json:"updated_at"`         // updated_at
+	Id        uint32         `gorm:"column:id;autoIncrement;type:int(10) unsigned;primaryKey;comment:'ID'" json:"id"`    // ID
+	ParentId  uint32         `gorm:"column:parent_id;type:int(10) unsigned;default:0;comment:'父级'" json:"parent_id"`     // 父级
+	Name      string         `gorm:"column:name;type:varchar(50);comment:'组件名称'" json:"name"`                            // 组件名称
+	Component string         `gorm:"column:component;type:varchar(50);comment:'组件'" json:"component"`                    // 组件
+	Path      *string        `gorm:"column:path;type:varchar(255);default:;comment:'地址'" json:"path"`                    // 地址
+	Redirect  *string        `gorm:"column:redirect;type:varchar(255);default:;comment:'重定向'" json:"redirect"`           // 重定向
+	Meta      database.JSON  `gorm:"column:meta;type:json;comment:'元数据'" json:"meta"`                                    // 元数据
+	Hidden    uint32         `gorm:"column:hidden;type:tinyint(3) unsigned;default:2;comment:'0忽略1隐藏2显示'" json:"hidden"` // 0忽略1隐藏2显示
+	Sort      uint32         `gorm:"column:sort;type:int(10) unsigned;default:0;comment:'排序'" json:"sort"`               // 排序
+	ApiList   *database.JSON `gorm:"column:api_list;type:json;comment:'api'" json:"api_list"`                            // api
+	CreatedAt *database.Time `gorm:"column:created_at;type:timestamp;comment:'created_at'" json:"created_at"`            // created_at
+	UpdatedAt *database.Time `gorm:"column:updated_at;type:timestamp;comment:'updated_at'" json:"updated_at"`            // updated_at
 }
+
+var (
+	AdminMenuFieldId        = "id"
+	AdminMenuFieldParentId  = "parent_id"
+	AdminMenuFieldName      = "name"
+	AdminMenuFieldComponent = "component"
+	AdminMenuFieldPath      = "path"
+	AdminMenuFieldRedirect  = "redirect"
+	AdminMenuFieldMeta      = "meta"
+	AdminMenuFieldHidden    = "hidden"
+	AdminMenuFieldSort      = "sort"
+	AdminMenuFieldApiList   = "api_list"
+	AdminMenuFieldCreatedAt = "created_at"
+	AdminMenuFieldUpdatedAt = "updated_at"
+)
 
 func (receiver *AdminMenu) TableName() string {
 	return "admin_menu"
@@ -169,7 +184,7 @@ func (orm *OrmAdminMenu) Offset(offset int) *OrmAdminMenu {
 	return orm
 }
 
-// 直接查询列表, 如果需要条数, 使用Find()
+// Get 直接查询列表, 如果需要条数, 使用Find()
 func (orm *OrmAdminMenu) Get() AdminMenuList {
 	got, _ := orm.Find()
 	return got
@@ -247,6 +262,20 @@ func (orm *OrmAdminMenu) Paginate(page int, limit int) (AdminMenuList, int64) {
 	}
 
 	return list, total
+}
+
+// SimplePaginate 不统计总数的分页
+func (orm *OrmAdminMenu) SimplePaginate(page int, limit int) AdminMenuList {
+	list := make([]*AdminMenu, 0)
+	if page == 0 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+	tx := orm.db.Offset(offset).Limit(limit).Find(&list)
+	if tx.Error != nil {
+		logrus.Error(tx.Error)
+	}
+	return list
 }
 
 // FindInBatches find records in batches

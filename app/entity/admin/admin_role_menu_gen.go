@@ -11,11 +11,18 @@ import (
 )
 
 type AdminRoleMenu struct {
-	RoleId    int32          `gorm:"column:role_id;type:int;index:laravel_admin_role_menu_role_id_menu_id_index,class:BTREE;comment:'role_id'" json:"role_id"` // role_id
-	MenuId    int32          `gorm:"column:menu_id;type:int;index:laravel_admin_role_menu_role_id_menu_id_index,class:BTREE;comment:'menu_id'" json:"menu_id"` // menu_id
-	CreatedAt *database.Time `gorm:"column:created_at;type:timestamp;comment:'created_at'" json:"created_at"`                                                  // created_at
-	UpdatedAt *database.Time `gorm:"column:updated_at;type:timestamp;comment:'updated_at'" json:"updated_at"`                                                  // updated_at
+	RoleId    int32          `gorm:"column:role_id;type:int(11);index:laravel_admin_role_menu_role_id_menu_id_index,class:BTREE;comment:'role_id'" json:"role_id"` // role_id
+	MenuId    int32          `gorm:"column:menu_id;type:int(11);index:laravel_admin_role_menu_role_id_menu_id_index,class:BTREE;comment:'menu_id'" json:"menu_id"` // menu_id
+	CreatedAt *database.Time `gorm:"column:created_at;type:timestamp;comment:'created_at'" json:"created_at"`                                                      // created_at
+	UpdatedAt *database.Time `gorm:"column:updated_at;type:timestamp;comment:'updated_at'" json:"updated_at"`                                                      // updated_at
 }
+
+var (
+	AdminRoleMenuFieldRoleId    = "role_id"
+	AdminRoleMenuFieldMenuId    = "menu_id"
+	AdminRoleMenuFieldCreatedAt = "created_at"
+	AdminRoleMenuFieldUpdatedAt = "updated_at"
+)
 
 func (receiver *AdminRoleMenu) TableName() string {
 	return "admin_role_menu"
@@ -161,7 +168,7 @@ func (orm *OrmAdminRoleMenu) Offset(offset int) *OrmAdminRoleMenu {
 	return orm
 }
 
-// 直接查询列表, 如果需要条数, 使用Find()
+// Get 直接查询列表, 如果需要条数, 使用Find()
 func (orm *OrmAdminRoleMenu) Get() AdminRoleMenuList {
 	got, _ := orm.Find()
 	return got
@@ -239,6 +246,20 @@ func (orm *OrmAdminRoleMenu) Paginate(page int, limit int) (AdminRoleMenuList, i
 	}
 
 	return list, total
+}
+
+// SimplePaginate 不统计总数的分页
+func (orm *OrmAdminRoleMenu) SimplePaginate(page int, limit int) AdminRoleMenuList {
+	list := make([]*AdminRoleMenu, 0)
+	if page == 0 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+	tx := orm.db.Offset(offset).Limit(limit).Find(&list)
+	if tx.Error != nil {
+		logrus.Error(tx.Error)
+	}
+	return list
 }
 
 // FindInBatches find records in batches
@@ -333,10 +354,6 @@ func (orm *OrmAdminRoleMenu) Joins(query string, args ...interface{}) *OrmAdminR
 func (orm *OrmAdminRoleMenu) WhereRoleId(val int32) *OrmAdminRoleMenu {
 	orm.db.Where("`role_id` = ?", val)
 	return orm
-}
-func (orm *OrmAdminRoleMenu) InsertGetRoleId(row *AdminRoleMenu) int32 {
-	orm.db.Create(row)
-	return row.RoleId
 }
 func (orm *OrmAdminRoleMenu) WhereRoleIdIn(val []int32) *OrmAdminRoleMenu {
 	orm.db.Where("`role_id` IN ?", val)

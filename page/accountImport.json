@@ -1,0 +1,31 @@
+{
+"type": "input-file",
+"label": "文件上传",
+"autoUpload": true,
+"proxy": true,
+"uploadType": "fileReceptor",
+"name": "file",
+"id": "u:5b175c88f14a",
+"btnLabel": "文件上传",
+"multiple": false,
+"useChunk": false,
+"accept": "txt",
+"drag": true,
+"remark": {
+"icon": "fa fa-question-circle",
+"trigger": [
+"hover"
+],
+"className": "Remark--warning",
+"placement": "top"
+},
+"labelRemark": {
+"icon": "fa fa-question-circle",
+"trigger": [
+"hover"
+],
+"className": "Remark--warning",
+"placement": "top"
+},
+"autoFill": {}
+}

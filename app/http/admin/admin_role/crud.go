@@ -12,7 +12,7 @@ func (c *CrudContext) Common() {
 
 func (c *CrudContext) Table(curd *amis.Crud) {
 	curd.Column("id", "id")
-	curd.Column("角色名", "name")
+	curd.Column("角色名", "name").SearchableInput()
 	curd.Column("备注", "remark")
 	curd.Column("默认权限", "slug")
 	curd.Column("created_at", "created_at")

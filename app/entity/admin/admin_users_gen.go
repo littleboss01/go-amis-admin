@@ -11,7 +11,7 @@ import (
 )
 
 type AdminUsers struct {
-	Id         uint32         `gorm:"column:id;autoIncrement;type:int unsigned;primaryKey;comment:'id'" json:"id"`                                                 // id
+	Id         uint32         `gorm:"column:id;autoIncrement;type:int(10) unsigned;primaryKey;comment:'id'" json:"id"`                                             // id
 	Username   string         `gorm:"column:username;type:varchar(190);index:laravel_admin_users_username_unique,class:BTREE,unique;comment:'账户'" json:"username"` // 账户
 	Password   string         `gorm:"column:password;type:varchar(60);comment:'密码'" json:"password"`                                                               // 密码
 	Name       string         `gorm:"column:name;type:varchar(255);comment:'显示名称'" json:"name"`                                                                    // 显示名称
@@ -21,6 +21,17 @@ type AdminUsers struct {
 	UpdatedAt  *database.Time `gorm:"column:updated_at;type:timestamp;comment:'updated_at'" json:"updated_at"`                                                     // updated_at
 	AdminRoles []*AdminRoles  `gorm:"many2many:admin_role_users;joinForeignKey:user_id;joinReferences:role_id;"`
 }
+
+var (
+	AdminUsersFieldId        = "id"
+	AdminUsersFieldUsername  = "username"
+	AdminUsersFieldPassword  = "password"
+	AdminUsersFieldName      = "name"
+	AdminUsersFieldAvatar    = "avatar"
+	AdminUsersFieldDeletedAt = "deleted_at"
+	AdminUsersFieldCreatedAt = "created_at"
+	AdminUsersFieldUpdatedAt = "updated_at"
+)
 
 func (receiver *AdminUsers) TableName() string {
 	return "admin_users"
@@ -166,7 +177,7 @@ func (orm *OrmAdminUsers) Offset(offset int) *OrmAdminUsers {
 	return orm
 }
 
-// 直接查询列表, 如果需要条数, 使用Find()
+// Get 直接查询列表, 如果需要条数, 使用Find()
 func (orm *OrmAdminUsers) Get() AdminUsersList {
 	got, _ := orm.Find()
 	return got
@@ -244,6 +255,20 @@ func (orm *OrmAdminUsers) Paginate(page int, limit int) (AdminUsersList, int64) 
 	}
 
 	return list, total
+}
+
+// SimplePaginate 不统计总数的分页
+func (orm *OrmAdminUsers) SimplePaginate(page int, limit int) AdminUsersList {
+	list := make([]*AdminUsers, 0)
+	if page == 0 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+	tx := orm.db.Offset(offset).Limit(limit).Find(&list)
+	if tx.Error != nil {
+		logrus.Error(tx.Error)
+	}
+	return list
 }
 
 // FindInBatches find records in batches
@@ -366,10 +391,6 @@ func (orm *OrmAdminUsers) WhereIdLte(val uint32) *OrmAdminUsers {
 func (orm *OrmAdminUsers) WhereUsername(val string) *OrmAdminUsers {
 	orm.db.Where("`username` = ?", val)
 	return orm
-}
-func (orm *OrmAdminUsers) InsertGetUsername(row *AdminUsers) string {
-	orm.db.Create(row)
-	return row.Username
 }
 func (orm *OrmAdminUsers) WhereUsernameIn(val []string) *OrmAdminUsers {
 	orm.db.Where("`username` IN ?", val)

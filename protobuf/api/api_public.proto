@@ -13,6 +13,7 @@ service Public {
   rpc Home(HomeRequest)returns(HomeResponse){
     option (http.Get) = "/home";
   }
+
 }
 
 message HomeRequest {}
@@ -21,3 +22,4 @@ message HomeResponse {
   string start_time = 1;
   string tip = 2;
 }
+

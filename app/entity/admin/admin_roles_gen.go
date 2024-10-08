@@ -11,13 +11,22 @@ import (
 )
 
 type AdminRoles struct {
-	Id        uint32         `gorm:"column:id;autoIncrement;type:int unsigned;primaryKey;comment:'id'" json:"id"`                                     // id
+	Id        uint32         `gorm:"column:id;autoIncrement;type:int(10) unsigned;primaryKey;comment:'id'" json:"id"`                                 // id
 	Name      string         `gorm:"column:name;type:varchar(50);index:laravel_admin_roles_name_unique,class:BTREE,unique;comment:'角色名'" json:"name"` // 角色名
 	Slug      string         `gorm:"column:slug;type:varchar(50);default:;comment:'默认权限'" json:"slug"`                                                // 默认权限
 	Remark    string         `gorm:"column:remark;type:varchar(255);default:;comment:'备注'" json:"remark"`                                             // 备注
 	CreatedAt *database.Time `gorm:"column:created_at;type:timestamp;comment:'created_at'" json:"created_at"`                                         // created_at
 	UpdatedAt *database.Time `gorm:"column:updated_at;type:timestamp;comment:'updated_at'" json:"updated_at"`                                         // updated_at
 }
+
+var (
+	AdminRolesFieldId        = "id"
+	AdminRolesFieldName      = "name"
+	AdminRolesFieldSlug      = "slug"
+	AdminRolesFieldRemark    = "remark"
+	AdminRolesFieldCreatedAt = "created_at"
+	AdminRolesFieldUpdatedAt = "updated_at"
+)
 
 func (receiver *AdminRoles) TableName() string {
 	return "admin_roles"
@@ -163,7 +172,7 @@ func (orm *OrmAdminRoles) Offset(offset int) *OrmAdminRoles {
 	return orm
 }
 
-// 直接查询列表, 如果需要条数, 使用Find()
+// Get 直接查询列表, 如果需要条数, 使用Find()
 func (orm *OrmAdminRoles) Get() AdminRolesList {
 	got, _ := orm.Find()
 	return got
@@ -241,6 +250,20 @@ func (orm *OrmAdminRoles) Paginate(page int, limit int) (AdminRolesList, int64) 
 	}
 
 	return list, total
+}
+
+// SimplePaginate 不统计总数的分页
+func (orm *OrmAdminRoles) SimplePaginate(page int, limit int) AdminRolesList {
+	list := make([]*AdminRoles, 0)
+	if page == 0 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+	tx := orm.db.Offset(offset).Limit(limit).Find(&list)
+	if tx.Error != nil {
+		logrus.Error(tx.Error)
+	}
+	return list
 }
 
 // FindInBatches find records in batches
@@ -363,10 +386,6 @@ func (orm *OrmAdminRoles) WhereIdLte(val uint32) *OrmAdminRoles {
 func (orm *OrmAdminRoles) WhereName(val string) *OrmAdminRoles {
 	orm.db.Where("`name` = ?", val)
 	return orm
-}
-func (orm *OrmAdminRoles) InsertGetName(row *AdminRoles) string {
-	orm.db.Create(row)
-	return row.Name
 }
 func (orm *OrmAdminRoles) WhereNameIn(val []string) *OrmAdminRoles {
 	orm.db.Where("`name` IN ?", val)

@@ -132,6 +132,29 @@ func (f *Form) AddBody(i interface{}) {
 	}
 }
 
+func (f *Form) AddBodyByJsonStr(s string) {
+	var v interface{}
+	err := json.Unmarshal([]byte(s), &v)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
+	switch v := v.(type) {
+	case map[string]interface{}:
+		// JSON 是对象
+		f.AddBody(v)
+	case []interface{}:
+		// JSON 是数组
+		for _, item := range v {
+			f.AddBody(item)
+		}
+	default:
+		// 其他类型，可以按需处理或忽略
+		println("Unexpected JSON type")
+	}
+}
+
 func (f *Form) SetApi(url Url, method string) *Form {
 	newForm := *f
 	url.Method(method)
@@ -144,6 +167,7 @@ func (f *Form) Items() map[string]IsFormItem {
 	return f.itemList
 }
 
+// AddCreatedAndUpdatedAt 添加创建和更新时间字段
 func (f *Form) AddCreatedAndUpdatedAt() {
 	f.AddCreatedAt()
 	f.AddUpdatedAt()
@@ -228,6 +252,7 @@ func (f *FormItem) GetValue(row map[string]interface{}) interface{} {
 	return got
 }
 
+// Placeholder 显示提示
 func (f *FormItem) Placeholder(v string) *FormItem {
 	f.SetOptions("placeholder", v)
 	return f
@@ -261,6 +286,7 @@ func (f *FormItem) SetSave(fun func(old interface{}) interface{}) {
 	f.save = append(f.save, fun)
 }
 
+// SaveInt 保存为int
 func (f *FormItem) SaveInt() {
 	f.SetSave(func(old interface{}) interface{} {
 		got := 0

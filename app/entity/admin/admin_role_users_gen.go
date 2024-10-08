@@ -11,11 +11,18 @@ import (
 )
 
 type AdminRoleUsers struct {
-	RoleId    int32          `gorm:"column:role_id;type:int;index:laravel_admin_role_users_role_id_user_id_index,class:BTREE;comment:'role_id'" json:"role_id"` // role_id
-	UserId    int32          `gorm:"column:user_id;type:int;index:laravel_admin_role_users_role_id_user_id_index,class:BTREE;comment:'user_id'" json:"user_id"` // user_id
-	CreatedAt *database.Time `gorm:"column:created_at;type:timestamp;comment:'created_at'" json:"created_at"`                                                   // created_at
-	UpdatedAt *database.Time `gorm:"column:updated_at;type:timestamp;comment:'updated_at'" json:"updated_at"`                                                   // updated_at
+	RoleId    int32          `gorm:"column:role_id;type:int(11);index:laravel_admin_role_users_role_id_user_id_index,class:BTREE;comment:'role_id'" json:"role_id"` // role_id
+	UserId    int32          `gorm:"column:user_id;type:int(11);index:laravel_admin_role_users_role_id_user_id_index,class:BTREE;comment:'user_id'" json:"user_id"` // user_id
+	CreatedAt *database.Time `gorm:"column:created_at;type:timestamp;comment:'created_at'" json:"created_at"`                                                       // created_at
+	UpdatedAt *database.Time `gorm:"column:updated_at;type:timestamp;comment:'updated_at'" json:"updated_at"`                                                       // updated_at
 }
+
+var (
+	AdminRoleUsersFieldRoleId    = "role_id"
+	AdminRoleUsersFieldUserId    = "user_id"
+	AdminRoleUsersFieldCreatedAt = "created_at"
+	AdminRoleUsersFieldUpdatedAt = "updated_at"
+)
 
 func (receiver *AdminRoleUsers) TableName() string {
 	return "admin_role_users"
@@ -161,7 +168,7 @@ func (orm *OrmAdminRoleUsers) Offset(offset int) *OrmAdminRoleUsers {
 	return orm
 }
 
-// 直接查询列表, 如果需要条数, 使用Find()
+// Get 直接查询列表, 如果需要条数, 使用Find()
 func (orm *OrmAdminRoleUsers) Get() AdminRoleUsersList {
 	got, _ := orm.Find()
 	return got
@@ -239,6 +246,20 @@ func (orm *OrmAdminRoleUsers) Paginate(page int, limit int) (AdminRoleUsersList,
 	}
 
 	return list, total
+}
+
+// SimplePaginate 不统计总数的分页
+func (orm *OrmAdminRoleUsers) SimplePaginate(page int, limit int) AdminRoleUsersList {
+	list := make([]*AdminRoleUsers, 0)
+	if page == 0 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+	tx := orm.db.Offset(offset).Limit(limit).Find(&list)
+	if tx.Error != nil {
+		logrus.Error(tx.Error)
+	}
+	return list
 }
 
 // FindInBatches find records in batches
@@ -333,10 +354,6 @@ func (orm *OrmAdminRoleUsers) Joins(query string, args ...interface{}) *OrmAdmin
 func (orm *OrmAdminRoleUsers) WhereRoleId(val int32) *OrmAdminRoleUsers {
 	orm.db.Where("`role_id` = ?", val)
 	return orm
-}
-func (orm *OrmAdminRoleUsers) InsertGetRoleId(row *AdminRoleUsers) int32 {
-	orm.db.Create(row)
-	return row.RoleId
 }
 func (orm *OrmAdminRoleUsers) WhereRoleIdIn(val []int32) *OrmAdminRoleUsers {
 	orm.db.Where("`role_id` IN ?", val)
