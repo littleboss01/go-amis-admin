@@ -44,10 +44,11 @@ func NewCrudDisplay() *CurdController {
 type CurdController struct {
 	*gin.Context
 
-	page  *Page
-	title string
-	model Model
-	Crud  CurdSave
+	page    *Page
+	title   string
+	model   Model
+	Crud    CurdSave
+	primary string
 }
 
 type Model interface {
@@ -72,7 +73,14 @@ func (c *CurdController) SetDb(model Model) {
 }
 
 func (c *CurdController) GetPrimary() string {
-	return "id"
+	if c.primary == "" {
+		return "id"
+	}
+	return c.primary
+}
+
+func (c *CurdController) SetPrimary(primary string) {
+	c.primary = primary
 }
 
 // GetFromData 预处理提交参数
